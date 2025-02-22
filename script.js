@@ -1,31 +1,62 @@
-const car1 = document.getElementById('car1');
-const car2 = document.getElementById('car2');
-const startButton = document.getElementById('start-button');
+const dino = document.getElementById('dino');
+const cactus = document.getElementById('cactus');
+const scoreDisplay = document.getElementById('score');
+let score = 0;
+let isJumping = false;
 
-let car1Position = 0;
-let car2Position = 0;
+// ตรวจสอบการชน
+function checkCollision() {
+    const dinoRect = dino.getBoundingClientRect();
+    const cactusRect = cactus.getBoundingClientRect();
 
-function startRace() {
-    car1Position = 0;
-    car2Position = 0;
-    car1.style.bottom = '10px';
-    car2.style.bottom = '10px';
-    
-    const raceInterval = setInterval(() => {
-        car1Position += Math.random() * 10;
-        car2Position += Math.random() * 10;
-
-        car1.style.bottom = `${car1Position}px`;
-        car2.style.bottom = `${car2Position}px`;
-
-        if (car1Position >= 390) {
-            clearInterval(raceInterval);
-            alert("Car 1 wins!");
-        } else if (car2Position >= 390) {
-            clearInterval(raceInterval);
-            alert("Car 2 wins!");
-        }
-    }, 100);
+    if (
+        dinoRect.x < cactusRect.x + cactusRect.width &&
+        dinoRect.x + dinoRect.width > cactusRect.x &&
+        dinoRect.y < cactusRect.y + cactusRect.height &&
+        dinoRect.height + dinoRect.y > cactusRect.y
+    ) {
+        alert("Game Over! Your score: " + score);
+        document.location.reload();
+    }
 }
 
-startButton.addEventListener('click', startRace);
+// กระโดด
+function jump() {
+    if (isJumping) return;
+    isJumping = true;
+
+    let jumpHeight = 0;
+    const jumpInterval = setInterval(() => {
+        if (jumpHeight >= 100) {
+            clearInterval(jumpInterval);
+            const fallInterval = setInterval(() => {
+                if (jumpHeight <= 0) {
+                    clearInterval(fallInterval);
+                    isJumping = false;
+                }
+                jumpHeight -= 10;
+                dino.style.bottom = `${10 + jumpHeight}px`;
+            }, 20);
+        }
+        jumpHeight += 10;
+        dino.style.bottom = `${10 + jumpHeight}px`;
+    }, 20);
+}
+
+// เพิ่มคะแนน
+function increaseScore() {
+    score++;
+    scoreDisplay.innerText = "Score: " + score;
+}
+
+// เริ่มเกม
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        jump();
+    }
+});
+
+setInterval(() => {
+    checkCollision();
+    increaseScore();
+}, 100);
